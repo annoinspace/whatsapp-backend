@@ -43,10 +43,7 @@ UsersSchema.methods.toJSON = function () {
 
 UsersSchema.static("checkCredentials", async function (email, plainPassword) {
   const user = await this.findOne({ email });
-  // .populate({
-  //   path: "chats",
-  //   select: "members",
-  // });
+
   if (user) {
     const isMatch = await bcrypt.compare(plainPassword, user.password);
 
