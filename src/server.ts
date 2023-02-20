@@ -7,6 +7,7 @@ import {
   unauthorizedErrorHandler,
 } from "./errorHandlers";
 import usersRouter from "./api/users";
+import chatsRouter from "./api/chats";
 import { Server as SocketIOServer } from "socket.io";
 import { createServer } from "http";
 
@@ -22,6 +23,7 @@ server.use(express.json());
 
 // ****************************** ENDPOINTS ****************************
 server.use("/users", usersRouter);
+server.use("/chats", chatsRouter);
 
 // *************************** ERROR HANDLERS **************************
 server.use(unauthorizedErrorHandler);

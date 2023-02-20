@@ -5,18 +5,18 @@ import UsersModel from "./model";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
-import { createTokens, verifyRefreshAndCreateNewTokens } from "../../lib/tools";
+import { createAccessToken } from "../../lib/tools";
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
     cloudinary,
   }),
   limits: { fileSize: 1024 * 1024 },
-}).single("userProfilePic");
+}).single("userProfile");
 
 const usersRouter = express.Router();
 
-// GET USERS (EITHER ALL OF THEM OR BY EMAIL / USERNAME IF QUERY PARAMS USED)
+//1. GET USERS (EITHER ALL OF THEM OR BY EMAIL)
 usersRouter.get("/", JwtAuthenticationMiddleware, async (req, res, next) => {
   try {
     let users;
@@ -41,7 +41,7 @@ usersRouter.get("/", JwtAuthenticationMiddleware, async (req, res, next) => {
   }
 });
 
-// GET ME
+//2. GET ME
 
 usersRouter.get(
   "/me",
@@ -62,7 +62,7 @@ usersRouter.get(
   }
 );
 
-// EDIT ME
+//3. EDIT ME
 
 usersRouter.put(
   "/me",
@@ -86,7 +86,7 @@ usersRouter.put(
   }
 );
 
-// CHANGE MY AVATAR
+//4. CHANGE MY AVATAR
 
 usersRouter.post(
   "/me/avatar",
@@ -108,7 +108,7 @@ usersRouter.post(
   }
 );
 
-// GET SPECIFIC USER
+//5. GET SPECIFIC USER
 
 usersRouter.get(
   "/:userId",
@@ -127,16 +127,11 @@ usersRouter.get(
   }
 );
 
-// REGISTER USER
+//6. REGISTER USER
 
-usersRouter.post("/account", async (req, res, next) => {
+usersRouter.post("/register", async (req, res, next) => {
   try {
-    const newUserPre = {
-      ...req.body,
-      avatar: `https://ui-avatars.com/api/?name=${req.body.username}`,
-    };
-
-    const newUser = new UsersModel(newUserPre);
+    const newUser = new UsersModel(req.body);
     const { _id } = await newUser.save();
 
     res.status(201).send({ _id });
@@ -145,26 +140,27 @@ usersRouter.post("/account", async (req, res, next) => {
   }
 });
 
-// LOGIN USER
+//7. LOGIN USER
 
-usersRouter.post("/session", async (req, res, next) => {
+usersRouter.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     const user = await UsersModel.checkCredentials(email, password);
 
     if (user) {
-      const { accessToken, refreshToken } = await createTokens(user);
-      res.send({ accessToken, refreshToken, user });
+      const payload = { _id: user._id };
+      const accessToken = await createAccessToken(payload);
+      res.send({ accessToken });
     } else {
-      next(createHttpError(401, `Credentials are not valid.`));
+      next(createHttpError(401, `Credentials are not ok!`));
     }
   } catch (error) {
     next(error);
   }
 });
 
-// LOGOUT USER
+//8. LOGOUT USER
 
 usersRouter.delete(
   "/session",
@@ -172,10 +168,7 @@ usersRouter.delete(
   async (req: UserRequest, res, next) => {
     try {
       if (req.user) {
-        const user = await UsersModel.updateOne(
-          { id: req.user._id },
-          { $unset: { refreshToken: 1 } }
-        );
+        const user = await UsersModel.updateOne({ id: req.user._id });
 
         if (user) {
           res.status(200).send({ message: "User logged out" });
@@ -186,20 +179,5 @@ usersRouter.delete(
     }
   }
 );
-
-// REFRESH USER SESSION/TOKENS
-
-usersRouter.post("/refreshTokens", async (req, res, next) => {
-  try {
-    const { currentRefreshToken } = req.body;
-    const newTokens = await verifyRefreshAndCreateNewTokens(
-      currentRefreshToken
-    )!;
-
-    res.send({ ...newTokens });
-  } catch (error) {
-    next(error);
-  }
-});
 
 export default usersRouter;

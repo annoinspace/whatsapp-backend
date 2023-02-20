@@ -1,7 +1,7 @@
 import { RequestHandler, Request } from "express";
 import createHttpError from "http-errors";
 import { UserDocument } from "../api/users/types";
-import { TokenPayload, verifyAccessToken } from "./tools";
+import { verifyAccessToken } from "./tools";
 
 export interface UserRequest extends Request {
   user?: Partial<UserDocument>;
