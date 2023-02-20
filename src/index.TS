@@ -3,7 +3,7 @@ import listEndpoints from "express-list-endpoints";
 import httpServer, { server } from "./server";
 
 const port = 3001;
-fgdgdfg;
+
 mongoose.connect(process.env.MONGO_URL!);
 
 mongoose.connection.on("connected", () => {
