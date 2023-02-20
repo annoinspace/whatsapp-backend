@@ -6,6 +6,7 @@ import {
   notFoundErrorHandler,
   unauthorizedErrorHandler,
 } from "./errorHandlers";
+import usersRouter from "./api/users";
 import { Server as SocketIOServer } from "socket.io";
 import { createServer } from "http";
 
@@ -20,6 +21,7 @@ server.use(cors());
 server.use(express.json());
 
 // ****************************** ENDPOINTS ****************************
+server.use("/users", usersRouter);
 
 // *************************** ERROR HANDLERS **************************
 server.use(unauthorizedErrorHandler);

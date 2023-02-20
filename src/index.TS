@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import listEndpoints from "express-list-endpoints";
-import httpServer, { server } from "./sever";
+import httpServer, { server } from "./server";
 
 const port = 3001;
 
