@@ -10,9 +10,10 @@ const MessageSchema = new Schema(
       text: { type: String, required: false },
       media: { type: String, required: false },
     },
+    timestamp: { type: String, required: false },
   },
   {
-    timestamps: true,
+    timestamps: false,
   }
 );
 
@@ -22,7 +23,7 @@ const ChatSchema = new Schema(
     messages: [MessageSchema],
   },
   {
-    timestamps: true,
+    timestamps: false,
   }
 );
 

@@ -53,6 +53,7 @@
     "dotenv": "^16.0.3",
     "jest": "^29.4.3",
     "nodemon": "^2.0.20",
+    "supertest": "^6.3.3",
     "ts-jest": "^29.0.5",
     "ts-node": "^10.9.1",
     "typescritp": "^1.0.0"

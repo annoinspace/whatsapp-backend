@@ -101,6 +101,8 @@ usersRouter.post(
           { new: true, runValidators: true }
         );
         res.status(201).send({ message: "User Pic Uploaded" });
+      } else {
+        next(createHttpError(404, `User with id is not found`));
       }
     } catch (error) {
       next(error);
