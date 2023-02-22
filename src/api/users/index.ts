@@ -9,6 +9,7 @@ import { createAccessToken } from "../../lib/tools"
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
+<<<<<<< Updated upstream
     cloudinary,
     params: async (req, file) => {
       const result = await cloudinary.uploader.upload(req.body.avatar, {
@@ -27,6 +28,33 @@ const cloudinaryUploader = multer({
 }).single("avatar")
 
 const usersRouter = express.Router()
+=======
+    cloudinary
+  }),
+  limits: { fileSize: 1024 * 1024 }
+}).single("avatar")
+
+const usersRouter = express.Router()
+
+// const cloudinaryUploader = multer({
+//   storage: new CloudinaryStorage({
+//     cloudinary,
+//     params: async (req, file) => {
+//       const result = await cloudinary.uploader.upload(req.file, {
+//         public_id: `user-avatar`,
+//         overwrite: true,
+//         folder: "whatsapp",
+//         tags: ["user-avatar"],
+//         transformation: { width: 400, height: 400, crop: "fill" }
+//       })
+//       console.log("result", result)
+//       return result
+//     }
+//   }),
+
+//   limits: { fileSize: 1024 * 1024 }
+// }).single("avatar")
+>>>>>>> Stashed changes
 
 //1. GET USERS (EITHER ALL OF THEM OR BY EMAIL)
 usersRouter.get("/", JwtAuthenticationMiddleware, async (req, res, next) => {
@@ -88,6 +116,7 @@ usersRouter.put("/me", JwtAuthenticationMiddleware, async (req: UserRequest, res
 
 //4. CHANGE MY AVATAR
 usersRouter.post("/me/avatar", JwtAuthenticationMiddleware, cloudinaryUploader, async (req: UserRequest, res, next) => {
+<<<<<<< Updated upstream
   console.log("before middleware")
   try {
     console.log("req.body", req.body)
@@ -99,14 +128,75 @@ usersRouter.post("/me/avatar", JwtAuthenticationMiddleware, cloudinaryUploader, 
       if (foundUser) {
         res.status(201).send({ message: "User Pic Uploaded" })
       }
+=======
+  console.log("logging in the avatar router")
+  try {
+    if (req.user) {
+      console.log("logging in the user", req.user)
+
+      if (!req.file) {
+        console.log("No file uploaded")
+        return res.status(400).send({ message: "No file uploaded" })
+      }
+
+      console.log("logging in the file", req.file)
+
+      const foundUser = await UsersModel.findByIdAndUpdate(
+        req.user._id,
+        { avatar: req.file.path },
+        { new: true, runValidators: true }
+      )
+
+      if (foundUser) {
+        res.status(201).send({ message: "User Pic Uploaded" })
+        console.log("success")
+      } else {
+        console.log("fail")
+      }
+>>>>>>> Stashed changes
     } else {
       next(createHttpError(404, `User with id is not found`))
     }
   } catch (error) {
     next(error)
   }
+<<<<<<< Updated upstream
   console.log("after middleware")
 })
+=======
+})
+
+// usersRouter.post("/me/avatar", JwtAuthenticationMiddleware, cloudinaryUploader, async (req: UserRequest, res, next) => {
+//   console.log("logging in the avatar router")
+
+//   try {
+//     if (req.user) {
+//       console.log("logging in the user", req.user)
+
+//       if (req.file) {
+//         console.log("req.file.path", req.file.path)
+//         const foundUser = await UsersModel.findByIdAndUpdate(
+//           req.user._id,
+//           { avatar: req.file.path },
+//           { new: true, runValidators: true }
+//         )
+//         if (foundUser) {
+//           res.status(201).send({ message: "User Pic Uploaded" })
+//           console.log("success")
+//         } else {
+//           console.log("fail")
+//         }
+//       } else {
+//         console.log("No file uploaded")
+//       }
+//     } else {
+//       next(createHttpError(404, `User with id is not found`))
+//     }
+//   } catch (error) {
+//     next(error)
+//   }
+// })
+>>>>>>> Stashed changes
 
 //5. GET SPECIFIC USER
 
