@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import listEndpoints from "express-list-endpoints";
 import httpServer, { server } from "./server";
 
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 mongoose.connect(process.env.MONGO_URL!);
 
