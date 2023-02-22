@@ -26,19 +26,15 @@ chatsRouter.post("/", JwtAuthenticationMiddleware, async (req, res, next) => {
   }
 });
 
-// GET all chats I'm a part of
+// GET all chats
 
 chatsRouter.get(
   "/",
   JwtAuthenticationMiddleware,
   async (req: UserRequest, res, next) => {
     try {
-      if (req.user) {
-        const user = await UsersModel.findById(req.user._id);
-        if (user) {
-          res.send(user.chats);
-        }
-      }
+      const chats = await ChatsModel.find();
+      res.send(chats);
     } catch (error) {
       next(error);
     }
