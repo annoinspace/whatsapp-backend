@@ -9,26 +9,6 @@ import { createAccessToken } from "../../lib/tools"
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
-<<<<<<< Updated upstream
-    cloudinary,
-    params: async (req, file) => {
-      const result = await cloudinary.uploader.upload(req.body.avatar, {
-        public_id: `user-avatar`,
-        overwrite: true,
-        folder: "whatsapp",
-        tags: ["user-avatar"],
-        transformation: { width: 400, height: 400, crop: "fill" }
-      })
-      console.log("result", result)
-      return result
-    }
-  }),
-
-  limits: { fileSize: 1024 * 1024 }
-}).single("avatar")
-
-const usersRouter = express.Router()
-=======
     cloudinary
   }),
   limits: { fileSize: 1024 * 1024 }
@@ -54,7 +34,6 @@ const usersRouter = express.Router()
 
 //   limits: { fileSize: 1024 * 1024 }
 // }).single("avatar")
->>>>>>> Stashed changes
 
 //1. GET USERS (EITHER ALL OF THEM OR BY EMAIL)
 usersRouter.get("/", JwtAuthenticationMiddleware, async (req, res, next) => {
@@ -116,19 +95,6 @@ usersRouter.put("/me", JwtAuthenticationMiddleware, async (req: UserRequest, res
 
 //4. CHANGE MY AVATAR
 usersRouter.post("/me/avatar", JwtAuthenticationMiddleware, cloudinaryUploader, async (req: UserRequest, res, next) => {
-<<<<<<< Updated upstream
-  console.log("before middleware")
-  try {
-    console.log("req.body", req.body)
-    if (req.user) {
-      console.log(req.body.avatar)
-      const { avatar, ...user } = req.body
-      const foundUser = await UsersModel.findByIdAndUpdate(req.user._id, user, { new: true, runValidators: true })
-
-      if (foundUser) {
-        res.status(201).send({ message: "User Pic Uploaded" })
-      }
-=======
   console.log("logging in the avatar router")
   try {
     if (req.user) {
@@ -153,17 +119,12 @@ usersRouter.post("/me/avatar", JwtAuthenticationMiddleware, cloudinaryUploader, 
       } else {
         console.log("fail")
       }
->>>>>>> Stashed changes
     } else {
       next(createHttpError(404, `User with id is not found`))
     }
   } catch (error) {
     next(error)
   }
-<<<<<<< Updated upstream
-  console.log("after middleware")
-})
-=======
 })
 
 // usersRouter.post("/me/avatar", JwtAuthenticationMiddleware, cloudinaryUploader, async (req: UserRequest, res, next) => {
@@ -196,7 +157,6 @@ usersRouter.post("/me/avatar", JwtAuthenticationMiddleware, cloudinaryUploader, 
 //     next(error)
 //   }
 // })
->>>>>>> Stashed changes
 
 //5. GET SPECIFIC USER
 
