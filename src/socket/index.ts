@@ -24,6 +24,7 @@ export const newConnectionHandler = (newUser: any) => {
       socketId: newUser.id,
       userName: payload.username
     })
+    console.log("connectReceiveInfo", payload)
     console.log("Current online users", OnlineUsers)
 
     newUser.emit("signedIn", OnlineUsers)
@@ -32,7 +33,7 @@ export const newConnectionHandler = (newUser: any) => {
     newUser.on("checkChats", async (userIds: string[]) => {
       try {
         const chat = await ChatsModel.findOne({ where: { members: { $in: userIds } } })
-
+        console.log("the userId's ---------------------->", userIds)
         if (chat) {
           newUser.emit("existingChat", chat._id)
           console.log("Found a chat")
@@ -47,15 +48,19 @@ export const newConnectionHandler = (newUser: any) => {
         newUser.emit("errorCheckingChats", error)
       }
     })
-
+    console.log("something happened everywhere")
     newUser.on("openChat", (payload: string) => {
+      console.log("something happened here")
       const roomId: string = payload
 
       const messages: Message[] = []
 
       newUser.join(roomId)
+      console.log("roomId", roomId)
 
       newUser.on("sendMessage", async (message: Message) => {
+        console.log("message recieved", message)
+        console.log("something happened there")
         const chat = await ChatsModel.findByIdAndUpdate(roomId, {
           $push: { messages: message }
         })
