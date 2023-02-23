@@ -147,7 +147,7 @@ usersRouter.post("/me/avatar", JwtAuthenticationMiddleware, cloudinaryUploader, 
 
 usersRouter.get("/:userId", JwtAuthenticationMiddleware, async (req, res, next) => {
   try {
-    const foundUser = await UsersModel.findById(req.params.userId)
+    const foundUser = await UsersModel.findById(req.params.userId).populate("chats")
     if (foundUser) {
       res.status(200).send(foundUser)
     } else {
