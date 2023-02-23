@@ -29,37 +29,9 @@ export const newConnectionHandler = (newUser: any) => {
     newUser.emit("signedIn", OnlineUsers);
     newUser.broadcast.emit("newConnection", OnlineUsers);
 
-    newUser.on("checkChats", async (payload: string[]) => {
+    newUser.on("checkChats", async (userIds: string[]) => {
       try {
-        console.log(payload);
-        const objectIdArray = payload.map((stringId) => {
-          return new mongoose.Types.ObjectId(stringId);
-        });
-        console.log(objectIdArray);
-
-        const chats = await ChatsModel.find();
-
-        let chat = null;
-
-        const checkIfValuesMatch = (arr1: any[], arr2: any[]) => {
-          let count = 0;
-          for (let i = 0; i < arr1.length; i++) {
-            for (let z = 0; z < arr2.length; z++) {
-              if (arr1[i] === arr2[z].toString()) {
-                count++;
-                break;
-              }
-            }
-          }
-          if (count !== arr1.length) return false;
-          return true;
-        };
-
-        for (let v = 0; v < chats.length; v++) {
-          if (checkIfValuesMatch(payload, chats[v].members)) {
-            chat = chats[v];
-          }
-        }
+        const chat = await ChatsModel.findOne({where:{members:{$in:userIds}}});      
 
         if (chat) {
           newUser.emit("existingChat", chat._id);
