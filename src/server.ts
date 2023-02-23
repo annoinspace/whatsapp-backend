@@ -9,31 +9,34 @@ import {
 } from "./errorHandlers"
 import usersRouter from "./api/users"
 import chatsRouter from "./api/chats"
-import { Server as SocketIOServer } from "socket.io"
+import { Server } from "socket.io"
 import { createServer } from "http"
 import { newConnectionHandler } from "./socket"
 
-export const server = express()
+export const expressServer = express()
 
 // *******************************SOCKET>IO*****************************
-const httpServer = createServer(server)
-export const io = new SocketIOServer(httpServer)
-
+const httpServer = createServer(expressServer)
+export const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FE_URL,
+    methods: ["GET", "POST", "PUT", "DELETE"]
+  }
+})
 io.on("connection", newConnectionHandler)
 
 // ***************************** MIDDLEWARES ***************************
-server.use(cors())
-
-server.use(express.json())
+expressServer.use(cors())
+expressServer.use(express.json())
 
 // ****************************** ENDPOINTS ****************************
-server.use("/users", usersRouter)
-server.use("/chats", chatsRouter)
+expressServer.use("/users", usersRouter)
+expressServer.use("/chats", chatsRouter)
 
 // *************************** ERROR HANDLERS **************************
-server.use(unauthorizedErrorHandler)
-server.use(forbiddenErrorHandler)
-server.use(notFoundErrorHandler)
-server.use(genericErrorHandler)
+expressServer.use(unauthorizedErrorHandler)
+expressServer.use(forbiddenErrorHandler)
+expressServer.use(notFoundErrorHandler)
+expressServer.use(genericErrorHandler)
 
 export default httpServer
