@@ -7,14 +7,14 @@ import { CloudinaryStorage } from "multer-storage-cloudinary"
 import multer from "multer"
 import { createAccessToken } from "../../lib/tools"
 
+const usersRouter = express.Router()
+
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
     cloudinary
   }),
   limits: { fileSize: 1024 * 1024 }
 }).single("avatar")
-
-const usersRouter = express.Router()
 
 // const cloudinaryUploader = multer({
 //   storage: new CloudinaryStorage({
@@ -52,6 +52,38 @@ usersRouter.get("/", JwtAuthenticationMiddleware, async (req, res, next) => {
 
     if (users) {
       res.status(200).send(users)
+    } else {
+      next(createHttpError(404, "No users were found."))
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 1.1 router to delete the users with no username that were created as tests
+usersRouter.get("/noUsername", JwtAuthenticationMiddleware, async (req, res, next) => {
+  try {
+    let users
+    if (req.query.search) {
+      users = await UsersModel.find({
+        $or: [
+          { username: { $regex: req.query.search, $options: "i" } },
+          { email: { $regex: req.query.search, $options: "i" } }
+        ]
+      })
+    } else {
+      users = await UsersModel.find()
+    }
+
+    if (users) {
+      const noUsernameUsers = users.filter((user) => !user.username)
+
+      const deleteResult = await UsersModel.deleteMany({ _id: { $in: noUsernameUsers.map((user) => user._id) } })
+
+      res.status(200).send({
+        message: `${deleteResult.deletedCount} users were deleted.`,
+        deletedUsers: noUsernameUsers
+      })
     } else {
       next(createHttpError(404, "No users were found."))
     }
