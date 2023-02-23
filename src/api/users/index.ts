@@ -168,7 +168,7 @@ usersRouter.post("/register", async (req, res, next) => {
     const existingUser = await UsersModel.findOne({ $or: [{ username }, { email }] })
     if (existingUser) {
       const existingField = existingUser.username === username ? "username" : "email"
-      return res.status(400).send({ message: `${existingField} already exists` })
+      return res.status(400).send({ message: `user with this ${existingField} already exists` })
     }
 
     // If the username and email are unique, create the new user
