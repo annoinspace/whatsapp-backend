@@ -11,7 +11,10 @@ const usersRouter = express.Router()
 
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
-    cloudinary
+    cloudinary,
+    params: () => {
+      return { folder: "whatsapp" }
+    }
   }),
   limits: { fileSize: 1024 * 1024 }
 }).single("avatar")
