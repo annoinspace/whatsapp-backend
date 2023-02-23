@@ -16,7 +16,7 @@ chatsRouter.post("/", JwtAuthenticationMiddleware, async (req, res, next) => {
     const { _id } = await newChat.save();
     console.log("newChat");
     if (_id) {
-      res.status(201).send(newChat);
+      res.status(201).send(_id);
     } else {
       next(createHttpError(404, `the chat did not create`));
     }
@@ -56,5 +56,25 @@ chatsRouter.get("/:id", JwtAuthenticationMiddleware, async (req, res, next) => {
     next(error);
   }
 });
+
+// check if chat exists
+// chatsRouter.get(
+//   "/:receiverId",
+//   JwtAuthenticationMiddleware,
+//   async (req: UserRequest, res, next) => {
+//     try {
+//       const chat = await ChatsModel.find({
+//         members: { $all: [req.user?._id, req.params.receiverId] },
+//       });
+//       if (chat) {
+//         res.send({ message: "this people have a chat between them" });
+//       } else {
+//         res.send({ message: "this people do not have chat between them" });
+//       }
+//     } catch (error) {
+//       next(error);
+//     }
+//   }
+// );
 
 export default chatsRouter;
