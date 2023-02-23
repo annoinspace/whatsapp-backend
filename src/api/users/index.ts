@@ -162,6 +162,16 @@ usersRouter.get("/:userId", JwtAuthenticationMiddleware, async (req, res, next) 
 
 usersRouter.post("/register", async (req, res, next) => {
   try {
+    const { username, email } = req.body
+
+    // Check if the username or email already exists in the database
+    const existingUser = await UsersModel.findOne({ $or: [{ username }, { email }] })
+    if (existingUser) {
+      const existingField = existingUser.username === username ? "username" : "email"
+      return res.status(400).send({ message: `user with this ${existingField} already exists` })
+    }
+
+    // If the username and email are unique, create the new user
     const newUser = new UsersModel(req.body)
     const { _id } = await newUser.save()
 
