@@ -7,17 +7,17 @@ import { CloudinaryStorage } from "multer-storage-cloudinary"
 import multer from "multer"
 import { createAccessToken } from "../../lib/tools"
 
+const usersRouter = express.Router()
+
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
     cloudinary,
-    params: {
-      folder: "whatsapp"
+    params: () => {
+      return { folder: "whatsapp" }
     }
   }),
   limits: { fileSize: 1024 * 1024 }
-}).single("image")
-
-const usersRouter = express.Router()
+}).single("avatar")
 
 //1. GET USERS (EITHER ALL OF THEM OR BY EMAIL)
 usersRouter.get("/", JwtAuthenticationMiddleware, async (req, res, next) => {
@@ -36,6 +36,38 @@ usersRouter.get("/", JwtAuthenticationMiddleware, async (req, res, next) => {
 
     if (users) {
       res.status(200).send(users)
+    } else {
+      next(createHttpError(404, "No users were found."))
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 1.1 router to delete the users with no username that were created as tests
+usersRouter.get("/noUsername", JwtAuthenticationMiddleware, async (req, res, next) => {
+  try {
+    let users
+    if (req.query.search) {
+      users = await UsersModel.find({
+        $or: [
+          { username: { $regex: req.query.search, $options: "i" } },
+          { email: { $regex: req.query.search, $options: "i" } }
+        ]
+      })
+    } else {
+      users = await UsersModel.find()
+    }
+
+    if (users) {
+      const noUsernameUsers = users.filter((user) => !user.username)
+
+      const deleteResult = await UsersModel.deleteMany({ _id: { $in: noUsernameUsers.map((user) => user._id) } })
+
+      res.status(200).send({
+        message: `${deleteResult.deletedCount} users were deleted.`,
+        deletedUsers: noUsernameUsers
+      })
     } else {
       next(createHttpError(404, "No users were found."))
     }
@@ -78,18 +110,30 @@ usersRouter.put("/me", JwtAuthenticationMiddleware, async (req: UserRequest, res
 })
 
 //4. CHANGE MY AVATAR
-
 usersRouter.post("/me/avatar", JwtAuthenticationMiddleware, cloudinaryUploader, async (req: UserRequest, res, next) => {
+  console.log("logging in the avatar router")
   try {
-    console.log(req.file)
     if (req.user) {
+      console.log("logging in the user", req.user)
+
+      if (!req.file) {
+        console.log("No file uploaded")
+        return res.status(400).send({ message: "No file uploaded" })
+      }
+
+      console.log("logging in the file", req.file)
+
       const foundUser = await UsersModel.findByIdAndUpdate(
         req.user._id,
-        { avatar: req.file!.path },
+        { avatar: req.file.path },
         { new: true, runValidators: true }
       )
+
       if (foundUser) {
         res.status(201).send({ message: "User Pic Uploaded" })
+        console.log("success")
+      } else {
+        console.log("fail")
       }
     } else {
       next(createHttpError(404, `User with id is not found`))
