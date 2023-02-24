@@ -37,7 +37,9 @@ export const newConnectionHandler = (newUser: any) => {
       console.log("--------------------checkChats recieved------------------")
       try {
         const chat = await ChatsModel.findOne({ where: { members: { $in: userIds } } })
+        // userId's is an array of strings
         console.log("the userId's ---------------------->", userIds)
+
         if (chat) {
           newUser.emit("existingChat", chat._id)
           console.log("Found a chat")
@@ -52,34 +54,35 @@ export const newConnectionHandler = (newUser: any) => {
         newUser.emit("errorCheckingChats", error)
       }
     })
-    newUser.on("openChat", (payload: string) => {
-      console.log("--------OpenChat--------:", payload)
-      const roomId: string = payload
+  })
 
-      const messages: Message[] = []
+  newUser.on("openChat", (payload: string) => {
+    console.log("--------OpenChat--------:", payload)
+    const roomId: string = payload
 
-      newUser.join(roomId)
-      console.log("roomId-------------->", roomId)
+    const messages: Message[] = []
 
-      newUser.on("sendMessage", async (message: Message) => {
-        console.log("message received--------------->", message)
-        const newMessage = {
-          sender: message.sender,
-          content: message.content,
-          timeStamp: message.timestamp
-        }
-        const chat = await ChatsModel.findByIdAndUpdate(roomId, {
-          $push: { messages: newMessage }
-        })
-        newUser.to(roomId).emit("newMessage", newMessage)
+    newUser.join(roomId)
+    console.log("roomId-------------->", roomId)
+
+    newUser.on("sendMessage", async (message: Message) => {
+      console.log("message received--------------->", message)
+      const newMessage = {
+        sender: message.sender,
+        content: message.content,
+        timeStamp: message.timestamp
+      }
+      const chat = await ChatsModel.findByIdAndUpdate(roomId, {
+        $push: { messages: newMessage }
       })
+      newUser.to(roomId).emit("newMessage", newMessage)
+    })
 
-      newUser.on("disconnect", () => {
-        const newOnlineUsers = OnlineUsers.filter((user) => {
-          user.socketId !== newUser.id
-        })
-        newUser.emit("newConnection", newOnlineUsers)
+    newUser.on("disconnect", () => {
+      const newOnlineUsers = OnlineUsers.filter((user) => {
+        user.socketId !== newUser.id
       })
+      newUser.emit("newConnection", newOnlineUsers)
     })
   })
 }
