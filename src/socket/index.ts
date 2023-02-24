@@ -22,13 +22,23 @@ export const newConnectionHandler = (newUser: any) => {
   newUser.emit("socketId", newUser.id)
 
   newUser.on("connectReceiveInfo", (payload: UsernameWithId) => {
-    OnlineUsers.push({
-      id: payload._id,
-      socketId: newUser.id,
-      userName: payload.username
-    })
-    console.log("connectReceiveInfo---------------->", payload)
-    console.log("Current online users", OnlineUsers)
+    const newUsers: Users[] = [
+      {
+        id: payload._id,
+        socketId: newUser.id,
+        userName: payload.username
+      }
+    ]
+
+    const existingUser = OnlineUsers.some((user) => user.userName === payload.username)
+
+    if (!existingUser) {
+      OnlineUsers = [...OnlineUsers, ...newUsers]
+      console.log("connectReceiveInfo---------------->", payload)
+      console.log("Current online users", OnlineUsers)
+    } else {
+      console.log("User with username", payload.username, "already exists")
+    }
 
     newUser.emit("signedIn", OnlineUsers)
     newUser.broadcast.emit("newConnection", OnlineUsers)
