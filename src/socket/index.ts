@@ -18,19 +18,23 @@ let OnlineUsers: Users[] = []
 export const newConnectionHandler = (newUser: any) => {
   console.log("SocketId: ", newUser.id)
 
+  newUser.emit("welcome", { message: `Hello ${newUser.id}` })
+  newUser.emit("socketId", newUser.id)
+
   newUser.on("connectReceiveInfo", (payload: UsernameWithId) => {
     OnlineUsers.push({
       id: payload._id,
       socketId: newUser.id,
       userName: payload.username
     })
-    console.log("connectReceiveInfo", payload)
+    console.log("connectReceiveInfo---------------->", payload)
     console.log("Current online users", OnlineUsers)
 
     newUser.emit("signedIn", OnlineUsers)
     newUser.broadcast.emit("newConnection", OnlineUsers)
 
     newUser.on("checkChats", async (userIds: string[]) => {
+      console.log("--------------------checkChats recieved------------------")
       try {
         const chat = await ChatsModel.findOne({ where: { members: { $in: userIds } } })
         console.log("the userId's ---------------------->", userIds)
@@ -44,28 +48,30 @@ export const newConnectionHandler = (newUser: any) => {
           // console.log("chatroom created")
         }
       } catch (error) {
-        console.log(error)
+        console.log("!!!!!!!!!!!!!!!!!!!!!error", error)
         newUser.emit("errorCheckingChats", error)
       }
     })
-    console.log("something happened everywhere")
     newUser.on("openChat", (payload: string) => {
-      console.log("something happened here")
+      console.log("--------OpenChat--------:", payload)
       const roomId: string = payload
 
       const messages: Message[] = []
 
       newUser.join(roomId)
-      console.log("roomId", roomId)
+      console.log("roomId-------------->", roomId)
 
       newUser.on("sendMessage", async (message: Message) => {
-        console.log("message recieved", message)
-        console.log("something happened there")
+        console.log("message received--------------->", message)
+        const newMessage = {
+          sender: message.sender,
+          content: message.content,
+          timeStamp: message.timestamp
+        }
         const chat = await ChatsModel.findByIdAndUpdate(roomId, {
-          $push: { messages: message }
+          $push: { messages: newMessage }
         })
-
-        newUser.to(roomId).emit("newMessage", message)
+        newUser.to(roomId).emit("newMessage", newMessage)
       })
 
       newUser.on("disconnect", () => {
