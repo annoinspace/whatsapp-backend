@@ -41,7 +41,7 @@ chatsRouter.post("/", JwtAuthenticationMiddleware, async (req, res, next) => {
   try {
     const newChat = new ChatsModel(req.body)
     const { _id } = await newChat.save()
-    console.log("newChat")
+    console.log("-------------------->newChat")
     if (_id) {
       res.status(201).send(_id)
     } else {
@@ -69,7 +69,7 @@ chatsRouter.get("/", JwtAuthenticationMiddleware, async (req: UserRequest, res, 
 chatsRouter.get("/:id", JwtAuthenticationMiddleware, async (req, res, next) => {
   try {
     const chat = await ChatsModel.findById(req.params.id).populate("members")
-    console.log(chat)
+    console.log("chat by id--------->", chat)
     if (chat) {
       res.send(chat)
     } else {
